@@ -3,7 +3,7 @@ from random import choice
 from math import sqrt
 
 def is_prime(x):
-    for i in range(2, int(sqrt(x))):
+    for i in range(2, int(sqrt(x))+1):
         if x % i == 0:
             return False
     return True
@@ -18,14 +18,14 @@ def extended_gcd(a, b):
     if a == 0:
         return (b, 0, 1)
     g, x, y = extended_gcd(b % a, a)
-    return (g, ((y - (b // a) * x)%b+b)%b, x)
+    return (g, y - (b // a) * x, x)
 
 def gcd(a,b):
     if b == 0:
         return a
     return gcd(b, a % b)
 
-def generate_keys(bits=(8,16)):
+def generate_keys(bits=(16,4)):
     p = generate_large_prime(bits=bits[0])
     q = generate_large_prime(bits=bits[1])
 
@@ -36,10 +36,11 @@ def generate_keys(bits=(8,16)):
     pairs = {}
     for x in range(fi//2, fi//4, -1):
         if gcd(fi, x) == 1:
-            d = extended_gcd(x,fi)[1]
+            d = (extended_gcd(x,fi)[1]%fi+fi)%fi
             if d != x:
                 pairs[x] = d
-
+    if not list(pairs.keys()):
+        return generate_keys(bits)
     e = choice(list(pairs.keys()))
     d = pairs[e]
 
