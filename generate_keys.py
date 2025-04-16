@@ -1,4 +1,5 @@
 from secrets import randbits
+from random import choice
 from math import sqrt
 
 def is_prime(x):
@@ -17,25 +18,30 @@ def extended_gcd(a, b):
     if a == 0:
         return (b, 0, 1)
     g, x, y = extended_gcd(b % a, a)
-    return (g, y - (b // a) * x, x)
-        
-def generate_keys():
-    p = generate_large_prime(bits=32)
-    q = generate_large_prime(bits=16)
+    return (g, ((y - (b // a) * x)%b+b)%b, x)
+
+def gcd(a,b):
+    if b == 0:
+        return a
+    return gcd(b, a % b)
+
+def generate_keys(bits=(8,16)):
+    p = generate_large_prime(bits=bits[0])
+    q = generate_large_prime(bits=bits[1])
 
     n = p*q
 
     fi = (p-1)*(q-1)
 
-    # generaing e
-    while True:
-        # if e is prime then it is "взаємо просте" with fi \_0_/
-        e = generate_large_prime(bits=16)
-        if e != q:
-            break
+    pairs = {}
+    for x in range(fi//2, fi//4, -1):
+        if gcd(fi, x) == 1:
+            d = extended_gcd(x,fi)[1]
+            if d != x:
+                pairs[x] = d
 
-    # looking for d by Evklid algo
-    d = (extended_gcd(e, fi)[1]%fi+fi)%fi
+    e = choice(list(pairs.keys()))
+    d = pairs[e]
 
     private = (d, n)
     public = (e, n)
