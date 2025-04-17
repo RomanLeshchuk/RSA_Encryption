@@ -4,6 +4,7 @@ Contains server representation
 
 import socket
 import threading
+import hashlib
 from generate_keys import generate_keys
 from encryption import encrypt
 
@@ -62,9 +63,11 @@ class Server:
         Sends message to all clients
         """
 
-        encrypted_msg = encrypt(msg, self.public_key).encode()
+        encrypted_msg = encrypt(msg, self.public_key)
+        msg_hash = hashlib.sha256(msg.encode()).hexdigest()
+        total_msg = f"{msg_hash}:{encrypted_msg}".encode()
         for client in self.clients:
-            client.send(encrypted_msg)
+            client.send(total_msg)
 
     def handle_client(self, c: socket):
         """

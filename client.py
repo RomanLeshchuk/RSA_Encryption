@@ -4,6 +4,7 @@ Contains client representation
 
 import socket
 import threading
+import hashlib
 from generate_keys import generate_keys
 from encryption import encrypt, decrypt
 
@@ -64,10 +65,13 @@ class Client:
         while True:
             message = self.s.recv(1024).decode()
 
-            # decrypt message with the secrete key
-            decrypted_msg = decrypt(message, self.server_private_key)
-
-            print(decrypted_msg)
+            # decrypt message with the secrete key and check message integrity
+            msg_hash, encrypted_msg = message.split(":")
+            decrypted_msg = decrypt(encrypted_msg, self.server_private_key)
+            if msg_hash != hashlib.sha256(decrypted_msg.encode()).hexdigest():
+                print("Received message integrity check failed")
+            else:
+                print(decrypted_msg)
 
     def write_handler(self):
         """
@@ -77,10 +81,13 @@ class Client:
         while True:
             message = input()
 
-            # encrypt message with the secrete key
-            encrypted_msg = encrypt(f"{self.username}: {message}", self.server_public_key)
+            # encrypt message with the secrete key and add hash
+            mesage_with_name = f"{self.username}: {message}"
+            encrypted_msg = encrypt(mesage_with_name, self.server_public_key)
+            msg_hash = hashlib.sha256(mesage_with_name.encode()).hexdigest()
+            total_msg = f"{msg_hash}:{encrypted_msg}".encode()
 
-            self.s.send(encrypted_msg.encode())
+            self.s.send(total_msg)
 
 if __name__ == "__main__":
     cl = Client("127.0.0.1", 9001, input("Enter your name: "))
