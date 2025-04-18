@@ -66,6 +66,7 @@ class Server:
         encrypted_msg = encrypt(msg, self.public_key)
         msg_hash = hashlib.sha256(msg.encode()).hexdigest()
         total_msg = f"{msg_hash}:{encrypted_msg}".encode()
+
         for client in self.clients:
             client.send(total_msg)
 
