@@ -1,4 +1,4 @@
-8<h1>RSA Encryption Algorithm</h1>
+<h1>RSA Encryption Algorithm</h1>
 
 <h2>Опис проєкту</h2>
 
